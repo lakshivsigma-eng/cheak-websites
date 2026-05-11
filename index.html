@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --panel: #1e293b;
+            --accent-pink: #f472b6;
+            --java-orange: #f89820;
+            --html-blue: #38bdf8;
+            --terminal-green: #10b981;
+        }
+
+        body {
+            background: var(--bg);
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Top Header */
+        .header {
+            padding: 10px 20px;
+            background: var(--panel);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #334155;
+        }
+
+        /* Language Switcher in Corner */
+        .mode-selector {
+            display: flex;
+            background: #000;
+            padding: 4px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+        }
+
+        .mode-btn {
+            padding: 6px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: 0.2s;
+            border: none;
+            color: #94a3b8;
+            background: transparent;
+        }
+
+        .mode-btn.active {
+            background: var(--panel);
+            color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        /* Layout */
+        .container {
+            display: flex;
+            flex: 1;
+            padding: 15px;
+            gap: 15px;
+        }
+
+        #editor {
+            flex: 1;
+            background: #000;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+            outline: none;
+            font-size: 15px;
+            font-family: 'Consolas', monospace;
+            resize: none;
+            transition: color 0.3s;
+        }
+
+        /* Preview Windows */
+        .preview-side {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #334155;
+        }
+
+        /* Java Console Style */
+        #java-console {
+            flex: 1;
+            background: #000;
+            padding: 20px;
+            color: var(--terminal-green);
+            font-family: monospace;
+            overflow-y: auto;
+        }
+
+        /* HTML Preview Style */
+        #html-preview {
+            flex: 1;
+            background: white;
+            display: none; /* Hidden by default */
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .label-bar {
+            background: #1e293b;
+            padding: 5px 15px;
+            font-size: 11px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div>SiteForge <span id="title-mode" style="color:var(--accent-pink)">Studio</span></div>
+    
+    <div class="mode-selector">
+        <button class="mode-btn active" id="btn-java" onclick="switchMode('java')">JAVA</button>
+        <button class="mode-btn" id="btn-html" onclick="switchMode('html')">HTML5</button>
+    </div>
+</div>
+
+<div class="container">
+    <textarea id="editor" spellcheck="false"></textarea>
+
+    <div class="preview-side">
+        <div class="label-bar" id="view-label">Terminal Output</div>
+        
+        <div id="java-console"></div>
+        
+        <div id="html-preview">
+            <iframe id="html-frame"></iframe>
+        </div>
+    </div>
+</div>
+
+<script>
+    let mode = 'java';
+    const editor = document.getElementById('editor');
+    const javaConsole = document.getElementById('java-console');
+    const htmlPreview = document.getElementById('html-preview');
+    const htmlFrame = document.getElementById('html-frame');
+    const titleMode = document.getElementById('title-mode');
+
+    const startingCode = {
+        java: 'public class Main {\n  public static void main(String[] args) {\n    System.out.println("Java Mode Active");\n  }\n}',
+        html: '<h1 style="color: #f472b6;">HTML Mode Active</h1>\n<p>Start building your site...</p>'
+    };
+
+    function switchMode(newMode) {
+        mode = newMode;
+        
+        // Update Buttons
+        document.getElementById('btn-java').classList.toggle('active', mode === 'java');
+        document.getElementById('btn-html').classList.toggle('active', mode === 'html');
+
+        // Update UI Visibility
+        if (mode === 'java') {
+            javaConsole.style.display = 'block';
+            htmlPreview.style.display = 'none';
+            editor.style.color = 'var(--java-orange)';
+            titleMode.style.color = 'var(--java-orange)';
+            document.getElementById('view-label').innerText = "Terminal Output";
+        } else {
+            javaConsole.style.display = 'none';
+            htmlPreview.style.display = 'block';
+            editor.style.color = 'var(--html-blue)';
+            titleMode.style.color = 'var(--html-blue)';
+            document.getElementById('view-label').innerText = "Live Web Preview";
+        }
+
+        editor.value = startingCode[mode];
+        update();
+    }
+
+    function update() {
+        const code = editor.value;
+
+        if (mode === 'java') {
+            // Java Engine (Regex)
+            javaConsole.innerHTML = "";
+            const regex = /System\.out\.println\s*\(\s*"(.*?)"\s*\);/g;
+            let match;
+            while ((match = regex.exec(code)) !== null) {
+                const line = document.createElement('div');
+                line.textContent = "> " + match[1];
+                javaConsole.appendChild(line);
+            }
+        } else {
+            // HTML Engine (SrcDoc)
+            htmlFrame.srcdoc = code;
+        }
+    }
+
+    editor.addEventListener('input', update);
+    
+    // Start in Java mode
+    switchMode('java');
+</script>
+
+</body>
+</html>
