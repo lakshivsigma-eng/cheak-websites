@@ -470,8 +470,9 @@ function newFileDialog(pid, kind, cb){
   el.innerHTML = '<div class="nf"><h3>Create new file</h3><div class="nf-types"></div><label>File name</label><input class="nf-name" spellcheck="false" autocomplete="off"><div class="nf-hint"></div><div class="nf-btns"><button class="nf-cancel">Cancel</button><button class="nf-ok">Create</button></div></div>';
   const types = el.querySelector('.nf-types'), inp = el.querySelector('.nf-name'), hint = el.querySelector('.nf-hint');
   const where = pid === 'root' ? 'This PC' : pathOf(pid).map(x => x.name).join(' › ');
+  const fullName = () => { let n = cleanName(inp.value); if (n && !/\.[^.]+$/.test(n)) n += type[3]; return n; };
   const updateHint = () => {
-    const n = cleanName(inp.value);
+    const n = fullName();
     const final = n ? uniqueName(pid, n) : '';
     hint.textContent = !n ? 'Enter a file name.' : (final !== n ? 'That name is taken, so it will be saved as "' + final + '" in ' + where + '.' : 'Will be created in ' + where + '.');
   };
@@ -489,7 +490,7 @@ function newFileDialog(pid, kind, cb){
   inp.oninput = updateHint;
   const close = () => el.remove();
   const create = () => {
-    const name = cleanName(inp.value);
+    const name = fullName();
     if (!name) { inp.focus(); return; }
     const m = name.match(/\.([^.]+)$/), ext = m ? m[1].toLowerCase() : '';
     const tpl = FILE_TYPES.find(t => t[0] === ext || (ext === 'htm' && t[0] === 'html'));
